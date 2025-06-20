@@ -1,21 +1,32 @@
 import { HttpService } from '@nestjs/axios';
-import { createWriteStream } from 'fs';
+import { createWriteStream, readFileSync } from 'fs';
 import { Command, CommandRunner } from 'nest-commander';
 import { chromium, Page, Response } from 'playwright-core';
 import { lastValueFrom } from 'rxjs';
 import { Readable } from 'stream';
 import { retry, sleep } from '../utils/common.util';
 
+interface GenerateImageChatGPTCommandInputs {
+  prompt: string;
+  outputPath: string;
+}
+
 @Command({
   name: 'generate-image-chat-gpt',
   description: 'Generate an image using ChatGPT',
+  arguments: '<file-settings>',
 })
 export class GenerateImageChatGPTCommand extends CommandRunner {
   constructor(private readonly httpService: HttpService) {
     super();
   }
 
-  async run() {
+  async run(inputs: string[]) {
+    const pathFileSetting = inputs[0];
+    const fileSettings = JSON.parse(
+      readFileSync(pathFileSetting, 'utf8'),
+    ) as GenerateImageChatGPTCommandInputs;
+
     const browser = await chromium.launchPersistentContext(
       '/Users/gtn4/Library/Application Support/Google/Chrome/Default',
       {
@@ -43,12 +54,9 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
         timeout: 10000,
       });
 
-      const imageUrl = await this.generateImage(
-        page,
-        'Tạo cho tôi một bức ảnh của một con chim cánh cụt đang ngậm một cái bánh mì',
-      );
+      const imageUrl = await this.generateImage(page, fileSettings.prompt);
 
-      await this.downloadImage(imageUrl, 'image.png');
+      await this.downloadImage(imageUrl, fileSettings.outputPath);
 
       console.log('Image downloaded successfully');
     } catch (error) {
