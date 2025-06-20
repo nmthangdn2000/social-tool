@@ -4,6 +4,7 @@ import { Command, CommandRunner } from 'nest-commander';
 import { chromium, Page, Response } from 'playwright-core';
 import { lastValueFrom } from 'rxjs';
 import { Readable } from 'stream';
+import { retry, sleep } from '../utils/common.util';
 
 @Command({
   name: 'generate-image-chat-gpt',
@@ -18,13 +19,19 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
     const browser = await chromium.launchPersistentContext(
       '/Users/gtn4/Library/Application Support/Google/Chrome/Default',
       {
-        headless: false,
+        headless: true,
         executablePath:
           '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
         args: [
           '--disable-blink-features=AutomationControlled',
+          '--no-sandbox',
           // '--profile-directory=Profile 5',
         ],
+        viewport: { width: 1920, height: 1080 },
+        locale: 'vi-VN',
+        timezoneId: 'Asia/Ho_Chi_Minh',
+        userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
       },
     );
 
@@ -38,7 +45,7 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
 
       const imageUrl = await this.generateImage(
         page,
-        'Tạo cho tôi một bức ảnh của một con chim đại bàng',
+        'Tạo cho tôi một bức ảnh của một con chim cánh cụt đang ngậm một cái bánh mì',
       );
 
       await this.downloadImage(imageUrl, 'image.png');
@@ -48,56 +55,65 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
       console.log(error);
     } finally {
       await browser.close();
+      process.exit(0);
     }
   }
 
   private async generateImage(page: Page, prompt: string) {
     const promptSelector = '#prompt-textarea';
 
-    await page.waitForSelector(promptSelector, { state: 'visible' });
+    await page.waitForSelector(promptSelector, {
+      state: 'visible',
+    });
 
     await page.click(promptSelector); // click vào để focus
     await page.fill(promptSelector, '');
     await page.keyboard.type(prompt);
     await page.keyboard.press('Enter');
 
-    const imageUrl = await new Promise<string>((resolve, reject) => {
-      const timeoutMs = 300000; // 5 phút
+    // const imageUrl = await new Promise<string>((resolve, reject) => {
+    //   // let downloadUrl: string;
 
-      const timeout = setTimeout(() => {
-        page.off('response', onResponse);
-        reject(
-          new Error(
-            '⏳ Timeout: Không tìm thấy response tải ảnh trong 5 phút.',
-          ),
-        );
-      }, timeoutMs);
+    //   // const onResponse = async (response: Response) => {
+    //   //   const url = response.url();
+    //   //   if (
+    //   //     url.includes('/backend-api/conversation') &&
+    //   //     url.includes('/attachment/') &&
+    //   //     url.includes('/download')
+    //   //   ) {
+    //   //     const data = (await response.json()) as {
+    //   //       status: string;
+    //   //       download_url: string;
+    //   //       file_name: string;
+    //   //     };
 
-      const onResponse = async (response: Response) => {
-        const url = response.url();
-        if (
-          url.includes('/backend-api/conversation') &&
-          url.includes('/attachment/') &&
-          url.includes('/download')
-        ) {
-          const data = (await response.json()) as {
-            status: string;
-            download_url: string;
-            file_name: string;
-          };
+    //   //     if (data.status === 'success' && data.file_name.includes('.png')) {
+    //   //       console.log('data', data);
 
-          if (data.status === 'success' && data.file_name.includes('.png')) {
-            clearTimeout(timeout);
-            page.off('response', onResponse);
-            resolve(data.download_url);
-          }
-        }
-      };
+    //   //       downloadUrl = data.download_url;
+    //   //     }
+    //   //   }
+    //   // };
 
-      page.on('response', onResponse);
+    //   // page.on('response', onResponse);
+
+    //   retry(async () => {
+    //     await this.waitOneOf(page);
+    //   })
+    //     .then(() => {
+    //       const downloadUrl = this.getLastImageURLInLastResponse(page);
+    //     })
+    //     .catch((error: Error) => {
+    //       reject(error);
+    //     })
+    //     .finally(() => {});
+    // });
+
+    await retry(async () => {
+      await this.waitOneOf(page);
     });
 
-    return imageUrl;
+    return await this.getLastImageURLInLastResponse(page);
   }
 
   private async downloadImage(imageUrl: string, outputPath: string) {
@@ -115,5 +131,53 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
       writer.on('finish', () => resolve());
       writer.on('error', (error) => reject(error));
     });
+  }
+
+  private async waitOneOf(page: Page) {
+    await sleep(1000);
+
+    const articles = await page.$$('article[data-testid^="conversation-turn"]');
+    if (articles.length === 0) {
+      throw new Error('❌ Không tìm thấy article nào.');
+    }
+    const lastArticle = articles[articles.length - 1];
+
+    const selectors = [
+      '[data-testid="copy-turn-action-button"]',
+      '[data-testid="good-response-turn-action-button"]',
+      '[data-testid="bad-response-turn-action-button"]',
+    ];
+
+    return await Promise.race(
+      selectors.map((selector) =>
+        lastArticle.waitForSelector(selector, {
+          timeout: 1000 * 60 * 5,
+        }),
+      ),
+    );
+  }
+
+  private async getLastImageURLInLastResponse(page: Page) {
+    await sleep(1000);
+
+    const articles = await page.$$('article[data-testid^="conversation-turn"]');
+    if (articles.length === 0) {
+      throw new Error('❌ Không tìm thấy article nào.');
+    }
+    const lastArticle = articles[articles.length - 1];
+    const text = await lastArticle.textContent();
+
+    const imageElement = await lastArticle.$('img');
+
+    if (!imageElement) {
+      throw new Error(`❌ Lỗi: ${text}`);
+    }
+
+    const imageURL = await imageElement.getAttribute('src');
+    if (!imageURL) {
+      throw new Error(`❌ Lỗi: ${text}`);
+    }
+
+    return imageURL;
   }
 }
