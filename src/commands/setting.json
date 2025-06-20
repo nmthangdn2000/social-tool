@@ -1,4 +1,5 @@
 {
+  "show_browser": true,
   "prompt": "Tạo cho tôi một bức ảnh của một con chim cánh cụt đang ngậm một cái bánh mì",
   "outputPath": "image.png"
 }

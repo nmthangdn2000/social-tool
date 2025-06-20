@@ -9,6 +9,7 @@ import { retry, sleep } from '../utils/common.util';
 interface GenerateImageChatGPTCommandInputs {
   prompt: string;
   outputPath: string;
+  show_browser: boolean;
 }
 
 @Command({
@@ -30,7 +31,7 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
     const browser = await chromium.launchPersistentContext(
       '/Users/gtn4/Library/Application Support/Google/Chrome/Default',
       {
-        headless: true,
+        headless: fileSettings.show_browser ? false : true,
         executablePath:
           '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
         args: [
@@ -56,7 +57,7 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
 
       const imageUrl = await this.generateImage(page, fileSettings.prompt);
 
-      await this.downloadImage(imageUrl, fileSettings.outputPath);
+      await this.downloadImage(imageUrl, 'image.png');
 
       console.log('Image downloaded successfully');
     } catch (error) {
