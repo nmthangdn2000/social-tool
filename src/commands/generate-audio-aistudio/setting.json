@@ -1,0 +1,24 @@
+{
+  "show_browser": true,
+  "delay_between_jobs": 10000,
+  "jobs": [
+    {
+      "style_instruction": "Read aloud in a warm and friendly tone",
+      "prompt": "Xin chào, tôi là John Doe, tôi hiện đang ở Hà Nội, tôi đang làm việc tại Google",
+      "voice": "Zephyr",
+      "outputPath": "audio.wav"
+    },
+    {
+      "style_instruction": "Đọc với tông giọng con nít, nhẹ nhàng, vui vẻ",
+      "prompt": "Xin chào, tôi là John Doe, tôi hiện đang ở Hà Nội, tôi đang làm việc tại Google",
+      "voice": "Puck",
+      "outputPath": "audio2.wav"
+    },
+    {
+      "style_instruction": "Đọc với tông giọng bà già, nhẹ nhàng, vui vẻ",
+      "prompt": "Xin chào, tôi là John Doe, tôi hiện đang ở Hà Nội, tôi đang làm việc tại Google",
+      "voice": "Charon",
+      "outputPath": "audio3.wav"
+    }
+  ]
+}

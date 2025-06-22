@@ -1,20 +1,20 @@
 import { HttpService } from '@nestjs/axios';
 import { createWriteStream, readFileSync } from 'fs';
 import { Command, CommandRunner } from 'nest-commander';
-import { chromium, Page, Response } from 'playwright-core';
+import { Page } from 'playwright-core';
 import { lastValueFrom } from 'rxjs';
 import { Readable } from 'stream';
-import { retry, sleep } from '../utils/common.util';
-import { getChromeProfileSettings } from '../utils/chorme-setting.util';
+import { retry, sleep } from '../../utils/common.util';
+import { launchBrowser } from '../../utils/browser.util';
 
-interface GenerateImageChatGPTCommandInputs {
+type GenerateImageChatGPTCommandInputs = {
   show_browser: boolean;
   delay_between_jobs: number;
   jobs: {
     prompt: string;
     outputPath: string;
   }[];
-}
+};
 
 @Command({
   name: 'generate-image-chat-gpt',
@@ -32,25 +32,7 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
       readFileSync(pathFileSetting, 'utf8'),
     ) as GenerateImageChatGPTCommandInputs;
 
-    const chromeProfileSettings = getChromeProfileSettings();
-
-    const browser = await chromium.launchPersistentContext(
-      chromeProfileSettings.userDataDir,
-      {
-        headless: fileSettings.show_browser ? false : true,
-        executablePath: chromeProfileSettings.executablePath,
-        args: [
-          '--disable-blink-features=AutomationControlled',
-          '--no-sandbox',
-          // '--profile-directory=Profile 5',
-        ],
-        viewport: { width: 1920, height: 1080 },
-        locale: 'vi-VN',
-        timezoneId: 'Asia/Ho_Chi_Minh',
-        userAgent:
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-      },
-    );
+    const browser = await launchBrowser(fileSettings.show_browser);
 
     try {
       console.log('Generating image using ChatGPT...');
