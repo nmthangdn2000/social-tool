@@ -5,11 +5,15 @@ import { chromium, Page, Response } from 'playwright-core';
 import { lastValueFrom } from 'rxjs';
 import { Readable } from 'stream';
 import { retry, sleep } from '../utils/common.util';
+import { getChromeProfileSettings } from '../utils/chorme-setting.util';
 
 interface GenerateImageChatGPTCommandInputs {
-  prompt: string;
-  outputPath: string;
   show_browser: boolean;
+  delay_between_jobs: number;
+  jobs: {
+    prompt: string;
+    outputPath: string;
+  }[];
 }
 
 @Command({
@@ -28,12 +32,13 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
       readFileSync(pathFileSetting, 'utf8'),
     ) as GenerateImageChatGPTCommandInputs;
 
+    const chromeProfileSettings = getChromeProfileSettings();
+
     const browser = await chromium.launchPersistentContext(
-      '/Users/gtn4/Library/Application Support/Google/Chrome/Default',
+      chromeProfileSettings.userDataDir,
       {
         headless: fileSettings.show_browser ? false : true,
-        executablePath:
-          '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+        executablePath: chromeProfileSettings.executablePath,
         args: [
           '--disable-blink-features=AutomationControlled',
           '--no-sandbox',
@@ -55,9 +60,17 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
         timeout: 10000,
       });
 
-      const imageUrl = await this.generateImage(page, fileSettings.prompt);
+      for (const job of fileSettings.jobs) {
+        try {
+          const imageUrl = await this.generateImage(page, job.prompt);
 
-      await this.downloadImage(imageUrl, 'image.png');
+          await this.downloadImage(imageUrl, job.outputPath);
+
+          await sleep(fileSettings.delay_between_jobs);
+        } catch (error) {
+          throw new Error(`❌ Lỗi: ${job.prompt} - ${error}`);
+        }
+      }
 
       console.log('Image downloaded successfully');
     } catch (error) {

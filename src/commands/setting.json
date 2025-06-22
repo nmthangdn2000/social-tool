@@ -1,5 +1,18 @@
 {
   "show_browser": true,
-  "prompt": "Tạo cho tôi một bức ảnh của một con chim cánh cụt đang ngậm một cái bánh mì",
-  "outputPath": "image.png"
+  "delay_between_jobs": 1000,
+  "jobs": [
+    {
+      "prompt": "Tạo cho tôi một bức ảnh của một con chim cánh cụt đang ngậm một cái bánh mì",
+      "outputPath": "image.png"
+    },
+    {
+      "prompt": "Tạo cho tôi một bức ảnh của một con chim đại bàng đang bay",
+      "outputPath": "image2.png"
+    },
+    {
+      "prompt": "Tạo cho tôi một bức ảnh của một con cá đang bơi",
+      "outputPath": "image3.png"
+    }
+  ]
 }
