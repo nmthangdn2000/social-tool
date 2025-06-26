@@ -1,0 +1,12 @@
+{
+  "show_browser": true,
+  "is_close_browser": false,
+  "video_path": "public/video.mp4",
+  "description": "This is a test video #test #test2 #test3",
+  "audience": "Everyone",
+  "is_ai_generated": false,
+  "run_copyright_check": true,
+  "is_comment_on": true,
+  "is_duet_on": false,
+  "is_stitch_on": true
+}
