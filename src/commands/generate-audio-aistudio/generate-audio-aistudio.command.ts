@@ -7,6 +7,7 @@ import { listVoice } from './list-voice';
 import { Page } from 'playwright-core';
 
 type GenerateAudioAistudioCommandInputs = {
+  is_close_browser: boolean;
   show_browser: boolean;
   delay_between_jobs: number;
   jobs: {
@@ -56,8 +57,10 @@ export class GenerateAudioAistudioCommand extends CommandRunner {
     } catch (error) {
       console.log(`❌ Lỗi: ${error}`);
     } finally {
-      await browser.close();
-      process.exit(0);
+      if (fileSettings.is_close_browser) {
+        await browser.close();
+        process.exit(0);
+      }
     }
   }
 

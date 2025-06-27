@@ -8,6 +8,7 @@ import { retry, sleep } from '../../utils/common.util';
 import { launchBrowser } from '../../utils/browser.util';
 
 type GenerateImageChatGPTCommandInputs = {
+  is_close_browser: boolean;
   show_browser: boolean;
   delay_between_jobs: number;
   jobs: {
@@ -58,8 +59,10 @@ export class GenerateImageChatGPTCommand extends CommandRunner {
     } catch (error) {
       console.log(error);
     } finally {
-      await browser.close();
-      process.exit(0);
+      if (fileSettings.is_close_browser) {
+        await browser.close();
+        process.exit(0);
+      }
     }
   }
 
