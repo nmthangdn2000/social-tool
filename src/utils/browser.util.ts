@@ -39,8 +39,8 @@ export const launchBrowser = async (showBrowser: boolean) => {
       // '--profile-directory=Profile 5',
     ],
     viewport: { width: 1920, height: 1080 },
-    locale: 'vi-VN',
-    timezoneId: 'Asia/Ho_Chi_Minh',
+    locale: process.env.LOCALE || 'en-US',
+    timezoneId: process.env.TIMEZONE || 'Asia/Ho_Chi_Minh',
     userAgent:
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
   });

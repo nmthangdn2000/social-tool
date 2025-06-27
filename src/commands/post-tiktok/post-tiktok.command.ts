@@ -5,6 +5,7 @@ import { CommandRunner } from 'nest-commander';
 import { launchBrowser } from '../../utils/browser.util';
 import { Page } from 'playwright-core';
 import { Audience } from './post-tiktok.enum';
+import * as os from 'os';
 
 type PostTiktokCommandInputs = {
   show_browser: boolean;
@@ -89,6 +90,14 @@ export class PostTiktokCommand extends CommandRunner {
       await this.clickCheckboxByIndex(page, 2, fileSettings.is_stitch_on);
 
       await this.setSwitchAIGenerated(page, fileSettings.is_ai_generated);
+
+      await this.setSwitchCopyright(page, fileSettings.run_copyright_check);
+
+      await page
+        .locator('.footer button[data-e2e="post_video_button"]')
+        .click();
+
+      console.log('Done');
     } catch (error) {
       console.error(error);
     } finally {
@@ -99,8 +108,10 @@ export class PostTiktokCommand extends CommandRunner {
   }
 
   private async setDescription(page: Page, description: string) {
+    const platform = os.platform();
+    const selectAllShortcut = platform === 'darwin' ? 'Meta+A' : 'Control+A';
     await page.click('.public-DraftEditor-content');
-    await page.keyboard.press('Control+A');
+    await page.keyboard.press(selectAllShortcut);
     await page.keyboard.press('Backspace');
     await page.type('.public-DraftEditor-content', description);
   }
@@ -115,6 +126,12 @@ export class PostTiktokCommand extends CommandRunner {
     const checkbox = label.locator('input[type="checkbox"]');
     const isChecked = await checkbox.isChecked();
 
+    const isDisabled = await checkbox.isDisabled();
+
+    if (isDisabled) {
+      return;
+    }
+
     if (isChecked !== value) {
       await label.click();
     }
@@ -126,6 +143,23 @@ export class PostTiktokCommand extends CommandRunner {
     if ((checked && current === 'false') || (!checked && current === 'true')) {
       await toggle.click();
     }
+
+    if (checked) {
+      try {
+        const modalFooter = page.locator('.common-modal-footer');
+        await modalFooter.waitFor({ state: 'visible', timeout: 500 });
+
+        const primaryButton = modalFooter.locator(
+          'button[data-type="primary"]',
+        );
+
+        await primaryButton.click({
+          timeout: 500,
+        });
+      } catch (e: unknown) {
+        console.log('No modal footer', (e as Error).message);
+      }
+    }
   }
 
   private async selectDropdownById(page: Page, optionId: number) {
@@ -136,5 +170,45 @@ export class PostTiktokCommand extends CommandRunner {
       .click();
 
     await page.locator(`[id=${escapedId}]`).click();
+  }
+
+  private async setSwitchCopyright(page: Page, checked: boolean) {
+    const switchContent = page.locator('.copyright-check .Switch__content');
+
+    const isDisabled = await switchContent.getAttribute('data-disabled');
+    if (isDisabled === 'true') {
+      console.warn('⚠️ Switch is disabled. Cannot change state.');
+      return;
+    }
+
+    const current = await switchContent.getAttribute('aria-checked');
+    if ((checked && current === 'false') || (!checked && current === 'true')) {
+      await switchContent.click();
+
+      try {
+        // await page.locator('.copyright-check .tool-tip.success').waitFor({
+        //   state: 'visible',
+        //   timeout: 80000, // 80s
+        // });
+
+        const checkingIcon = page.locator('.tool-tip [data-icon="Hourglass"]');
+        await checkingIcon.waitFor({ state: 'visible', timeout: 5000 });
+
+        await checkingIcon.waitFor({
+          state: 'hidden',
+          timeout: 80000,
+        });
+
+        const successIcon = page.locator(
+          '.tool-tip.success [data-icon="Check"]',
+        );
+        if (await successIcon.isVisible({ timeout: 2000 })) {
+          console.log('🎉 Success icon detected. Done!');
+          return;
+        }
+      } catch (error) {
+        console.log('No success tooltip', (error as Error).message);
+      }
+    }
   }
 }
