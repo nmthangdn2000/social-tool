@@ -1,0 +1,6 @@
+{
+  "show_browser": true,
+  "is_close_browser": false,
+  "page": "Page test",
+  "video_path": "src/commands/post-video-facebook/video.mp4"
+}

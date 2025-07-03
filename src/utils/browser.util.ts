@@ -38,7 +38,14 @@ export const launchBrowser = async (showBrowser: boolean) => {
       '--no-sandbox',
       // '--profile-directory=Profile 5',
     ],
-    viewport: { width: 1920, height: 1080 },
+    viewport: {
+      width: process.env.BROWSER_WIDTH
+        ? parseInt(process.env.BROWSER_WIDTH)
+        : 1400,
+      height: process.env.BROWSER_HEIGHT
+        ? parseInt(process.env.BROWSER_HEIGHT)
+        : 800,
+    },
     locale: process.env.LOCALE || 'en-US',
     timezoneId: process.env.TIMEZONE || 'Asia/Ho_Chi_Minh',
     userAgent:
