@@ -97,8 +97,11 @@ export class PostTiktokCommand extends CommandRunner {
         .locator('.footer button[data-e2e="post_video_button"]')
         .click();
 
+      await page.waitForURL('https://www.tiktok.com/tiktokstudio/content');
+
       console.log('Done');
     } catch (error) {
+      console.log('Can not post video');
       console.error(error);
     } finally {
       if (fileSettings.is_close_browser) {
