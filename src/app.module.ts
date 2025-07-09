@@ -3,7 +3,7 @@ import { GenerateImageChatGPTCommand } from './commands/generate-image-chat-gpt/
 import { HttpModule } from '@nestjs/axios';
 import { GenerateAudioAistudioCommand } from './commands/generate-audio-aistudio/generate-audio-aistudio.command';
 import { PostTiktokCommand } from './commands/post-tiktok/post-tiktok.command';
-import { PostVideoFacebookCommand } from './commands/post-video-facebook/post-video-facebook.command';
+import { PostReelsFacebookCommand } from './commands/post-reels-facebook/post-reels-facebook.command';
 
 @Module({
   imports: [HttpModule],
@@ -11,7 +11,7 @@ import { PostVideoFacebookCommand } from './commands/post-video-facebook/post-vi
     GenerateImageChatGPTCommand,
     GenerateAudioAistudioCommand,
     PostTiktokCommand,
-    PostVideoFacebookCommand,
+    PostReelsFacebookCommand,
   ],
 })
 export class AppModule {}
