@@ -10,7 +10,7 @@ type PostReelsFacebookCommandInputs = {
   is_close_browser: boolean;
   video_path: string;
   description: string;
-  page: string;
+  page?: string;
 };
 
 @Command({
@@ -33,23 +33,25 @@ export class PostReelsFacebookCommand extends CommandRunner {
     try {
       const page = await browser.newPage();
 
-      await retry(async () => {
-        await page.goto('https://www.facebook.com/', {
-          waitUntil: 'domcontentloaded',
-        });
-
-        const loginForm = await page.$('[data-testid="royal_login_form"]');
-        if (loginForm) {
-          console.log('Please login to Facebook');
-          if (!fileSettings.show_browser) {
-            throw new Error(
-              'Please set show_browser to true to login to Facebook',
-            );
-          }
-        }
-
-        await this.selectProfile(page, fileSettings.page);
+      await page.goto('https://www.facebook.com/', {
+        waitUntil: 'domcontentloaded',
       });
+
+      const loginForm = await page.$('[data-testid="royal_login_form"]');
+      if (loginForm) {
+        console.log('Please login to Facebook');
+        if (!fileSettings.show_browser) {
+          throw new Error(
+            'Please set show_browser to true to login to Facebook',
+          );
+        }
+      }
+
+      if (fileSettings.page) {
+        await retry(async () => {
+          await this.selectProfile(page, fileSettings.page!);
+        });
+      }
 
       await this.postReels(page, fileSettings);
     } catch (error) {
@@ -139,41 +141,46 @@ export class PostReelsFacebookCommand extends CommandRunner {
   }
 
   private async postReels(page: Page, input: PostReelsFacebookCommandInputs) {
-    await page.goto('https://www.facebook.com/reels/create/');
+    try {
+      await page.goto('https://www.facebook.com/reels/create/');
 
-    await page.setInputFiles('input[type="file"]', input.video_path);
+      await page.setInputFiles('input[type="file"]', input.video_path);
 
-    await page.waitForSelector('div[aria-label="Next"][role="button"]');
-    await page.click('div[aria-label="Next"]');
+      await page.waitForSelector('div[aria-label="Next"][role="button"]');
+      await page.click('div[aria-label="Next"]');
 
-    await page.waitForTimeout(1000);
+      await page.waitForTimeout(1000);
 
-    const nextButtonStep2 = page
-      .locator('div[aria-label="Next"][role="button"]')
-      .nth(1);
-    await nextButtonStep2.click();
+      const nextButtonStep2 = page
+        .locator('div[aria-label="Next"][role="button"]')
+        .nth(1);
+      await nextButtonStep2.click();
 
-    await page.waitForSelector('div[role="form"]');
-    const editor = page.locator('div[role="form"] [contenteditable="true"]');
-    await editor.click();
-    await page.keyboard.type(input.description, {
-      delay: 100,
-    });
+      await page.waitForSelector('div[role="form"]');
+      const editor = page.locator('div[role="form"] [contenteditable="true"]');
+      await editor.click();
+      await page.keyboard.type(input.description, {
+        delay: 100,
+      });
 
-    await page.waitForTimeout(1000);
+      await page.waitForTimeout(1000);
 
-    const publishButton = page.locator(
-      'div[aria-label="Publish"][role="button"]:not([aria-disabled="true"])',
-    );
-    await publishButton.waitFor({ state: 'visible' });
-    await publishButton.click();
+      const publishButton = page.locator(
+        'div[aria-label="Publish"][role="button"]:not([aria-disabled="true"])',
+      );
+      await publishButton.waitFor({ state: 'visible' });
+      await publishButton.click();
 
-    await page.waitForTimeout(2000);
+      await page.waitForTimeout(2000);
 
-    await page.waitForSelector('[role="status"][aria-label="Loading..."]', {
-      state: 'hidden',
-    });
+      await page.waitForSelector('[role="status"][aria-label="Loading..."]', {
+        state: 'hidden',
+      });
 
-    console.log('✅ Reels đã được đăng thành công');
+      console.log('✅ Reels đã được đăng thành công');
+    } catch (error) {
+      console.error('Đăng reels thất bại');
+      throw error;
+    }
   }
 }
