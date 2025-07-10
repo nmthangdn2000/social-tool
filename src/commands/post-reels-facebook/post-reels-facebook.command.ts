@@ -144,43 +144,103 @@ export class PostReelsFacebookCommand extends CommandRunner {
     try {
       await page.goto('https://www.facebook.com/reels/create/');
 
-      await page.setInputFiles('input[type="file"]', input.video_path);
+      const currentUrl = page.url();
+      if (currentUrl.includes('/reel/')) {
+        return this.postReelsNewUrl(page, input);
+      }
 
-      await page.waitForSelector('div[aria-label="Next"][role="button"]');
-      await page.click('div[aria-label="Next"]');
-
-      await page.waitForTimeout(1000);
-
-      const nextButtonStep2 = page
-        .locator('div[aria-label="Next"][role="button"]')
-        .nth(1);
-      await nextButtonStep2.click();
-
-      await page.waitForSelector('div[role="form"]');
-      const editor = page.locator('div[role="form"] [contenteditable="true"]');
-      await editor.click();
-      await page.keyboard.type(input.description, {
-        delay: 100,
-      });
-
-      await page.waitForTimeout(1000);
-
-      const publishButton = page.locator(
-        'div[aria-label="Publish"][role="button"]:not([aria-disabled="true"])',
-      );
-      await publishButton.waitFor({ state: 'visible' });
-      await publishButton.click();
-
-      await page.waitForTimeout(2000);
-
-      await page.waitForSelector('[role="status"][aria-label="Loading..."]', {
-        state: 'hidden',
-      });
-
-      console.log('✅ Reels đã được đăng thành công');
+      return this.postReelsOldUrl(page, input);
     } catch (error) {
       console.error('Đăng reels thất bại');
       throw error;
     }
+  }
+
+  private async postReelsOldUrl(
+    page: Page,
+    input: PostReelsFacebookCommandInputs,
+  ) {
+    await page.setInputFiles('input[type="file"]', input.video_path);
+
+    await page.waitForSelector('div[aria-label="Next"][role="button"]');
+    await page.click('div[aria-label="Next"]');
+
+    await page.waitForTimeout(1000);
+
+    const nextButtonStep2 = page
+      .locator('div[aria-label="Next"][role="button"]')
+      .nth(1);
+    await nextButtonStep2.click();
+
+    await page.waitForSelector('div[role="form"]');
+    const editor = page.locator('div[role="form"] [contenteditable="true"]');
+    await editor.click();
+    await page.keyboard.type(input.description, {
+      delay: 100,
+    });
+
+    await page.waitForTimeout(1000);
+
+    const publishButton = page.locator(
+      'div[aria-label="Publish"][role="button"]:not([aria-disabled="true"])',
+    );
+    await publishButton.waitFor({ state: 'visible' });
+    await publishButton.click();
+
+    await page.waitForTimeout(2000);
+
+    await page.waitForSelector('[role="status"][aria-label="Loading..."]', {
+      state: 'hidden',
+    });
+
+    console.log('✅ Reels đã được đăng thành công');
+  }
+
+  private async postReelsNewUrl(
+    page: Page,
+    input: PostReelsFacebookCommandInputs,
+  ) {
+    const createReelBtn = page.locator(
+      'div[aria-pressed="false"][role="button"]',
+    );
+    await createReelBtn.waitFor({ state: 'visible' });
+    await createReelBtn.click();
+
+    await page.setInputFiles('input[type="file"]', input.video_path);
+
+    await page.waitForSelector('div[aria-label="Next"][role="button"]');
+    await page.click('div[aria-label="Next"]');
+
+    await page.waitForTimeout(1000);
+
+    const nextButtonStep2 = page
+      .locator('div[aria-label="Next"][role="button"]')
+      .nth(1);
+    await nextButtonStep2.click();
+
+    const form = page.locator('form[method="POST"]').nth(1);
+    await form.waitFor({ state: 'visible' });
+    const editor = form.locator('[contenteditable="true"]').nth(1);
+    await editor.click();
+
+    await page.keyboard.type(input.description, {
+      delay: 100,
+    });
+
+    await page.waitForTimeout(1000);
+
+    const publishButton = page.locator(
+      'div[aria-label="Post"][role="button"]:not([aria-disabled="true"])',
+    );
+    await publishButton.waitFor({ state: 'visible' });
+    await publishButton.click();
+
+    await page.waitForTimeout(2000);
+
+    await page.waitForSelector('[role="status"][aria-label="Loading..."]', {
+      state: 'hidden',
+    });
+
+    console.log('✅ Reels đã được đăng thành công');
   }
 }
