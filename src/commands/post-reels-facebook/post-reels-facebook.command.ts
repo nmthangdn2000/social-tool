@@ -142,14 +142,16 @@ export class PostReelsFacebookCommand extends CommandRunner {
 
   private async postReels(page: Page, input: PostReelsFacebookCommandInputs) {
     try {
-      await page.goto('https://www.facebook.com/reels/create/');
+      await page.locator('div[role="button"]:has-text("Reel")').click();
+
+      await page.waitForTimeout(2000);
 
       const currentUrl = page.url();
-      if (currentUrl.includes('/reel/')) {
-        return this.postReelsNewUrl(page, input);
+      if (currentUrl.includes('/reels/create/')) {
+        return this.postReelsOldUrl(page, input);
       }
 
-      return this.postReelsOldUrl(page, input);
+      return this.postReelsNewUrl(page, input);
     } catch (error) {
       console.error('Đăng reels thất bại');
       throw error;
@@ -160,6 +162,8 @@ export class PostReelsFacebookCommand extends CommandRunner {
     page: Page,
     input: PostReelsFacebookCommandInputs,
   ) {
+    await page.goto('https://www.facebook.com/reels/create/');
+
     await page.setInputFiles('input[type="file"]', input.video_path);
 
     await page.waitForSelector('div[aria-label="Next"][role="button"]');
@@ -200,13 +204,10 @@ export class PostReelsFacebookCommand extends CommandRunner {
     page: Page,
     input: PostReelsFacebookCommandInputs,
   ) {
-    const createReelBtn = page.locator(
-      'div[aria-pressed="false"][role="button"]',
+    await page.setInputFiles(
+      'div[aria-label="Reels"][role="form"] input[type="file"]',
+      input.video_path,
     );
-    await createReelBtn.waitFor({ state: 'visible' });
-    await createReelBtn.click();
-
-    await page.setInputFiles('input[type="file"]', input.video_path);
 
     await page.waitForSelector('div[aria-label="Next"][role="button"]');
     await page.click('div[aria-label="Next"]');
