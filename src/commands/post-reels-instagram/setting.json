@@ -1,0 +1,9 @@
+{
+  "show_browser": true,
+  "is_close_browser": false,
+  "video_path": "public/video.mp4",
+  "description": "Hello, world!",
+  "is_share_to_reels_facebook": false,
+  "is_hide_like_and_view_counts": false,
+  "is_turn_off_commenting": false
+}

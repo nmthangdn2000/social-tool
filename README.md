@@ -4,7 +4,7 @@ Một bộ công cụ tự động hóa cho các tác vụ mạng xã hội đư
 
 ## 🚀 Tính năng
 
-Dự án bao gồm 4 công cụ chính:
+Dự án bao gồm 5 công cụ chính:
 
 ### 1. Generate Image ChatGPT
 
@@ -21,6 +21,10 @@ Tự động đăng video lên TikTok Studio với các tùy chọn cấu hình 
 ### 4. Post Reels Facebook
 
 Tự động đăng video lên Facebook Reels với khả năng chọn profile và tùy chỉnh mô tả.
+
+### 5. Post Reels Instagram
+
+Tự động đăng video lên Instagram Reels với các tùy chọn chia sẻ và cài đặt nâng cao.
 
 ## 📋 Yêu cầu hệ thống
 
@@ -182,6 +186,40 @@ yarn command post-reels-facebook src/commands/post-reels-facebook/setting.json
 - `video_path`: Đường dẫn đến file video cần đăng
 - `description`: Mô tả cho reels
 
+### Post Reels Instagram
+
+Tự động đăng video lên Instagram Reels:
+
+```bash
+# Development
+yarn command:dev post-reels-instagram src/commands/post-reels-instagram/setting.json
+
+# Production
+yarn command post-reels-instagram src/commands/post-reels-instagram/setting.json
+```
+
+**Cấu hình setting.json:**
+
+```json
+{
+  "show_browser": true,
+  "is_close_browser": false,
+  "video_path": "public/video.mp4",
+  "description": "Hello, world!",
+  "is_share_to_reels_facebook": false,
+  "is_hide_like_and_view_counts": false,
+  "is_turn_off_commenting": false
+}
+```
+
+**Các tham số:**
+
+- `video_path`: Đường dẫn đến file video cần đăng
+- `description`: Mô tả cho reels
+- `is_share_to_reels_facebook`: Chia sẻ đồng thời lên Facebook Reels (true/false)
+- `is_hide_like_and_view_counts`: Ẩn số lượt thích và xem (true/false)
+- `is_turn_off_commenting`: Tắt bình luận (true/false)
+
 ## ⚙️ Cấu hình
 
 ### Các tham số chung:
@@ -196,9 +234,11 @@ yarn command post-reels-facebook src/commands/post-reels-facebook/setting.json
 
 2. **Đăng nhập Facebook**: Khi sử dụng tool Post Reels Facebook, bạn cần đăng nhập vào tài khoản Facebook. Đặt `show_browser: true` để có thể đăng nhập thủ công.
 
-3. **Đường dẫn file**: Đảm bảo đường dẫn file video trong setting là chính xác và file tồn tại.
+3. **Đăng nhập Instagram**: Khi sử dụng tool Post Reels Instagram, bạn cần đăng nhập vào tài khoản Instagram. Đặt `show_browser: true` để có thể đăng nhập thủ công.
 
-4. **Prompt ChatGPT**: Sử dụng tiếng Việt hoặc tiếng Anh cho prompt tạo hình ảnh.
+4. **Đường dẫn file**: Đảm bảo đường dẫn file video trong setting là chính xác và file tồn tại.
+
+5. **Prompt ChatGPT**: Sử dụng tiếng Việt hoặc tiếng Anh cho prompt tạo hình ảnh.
 
 ## 🧪 Scripts
 
@@ -229,7 +269,8 @@ src/
 │   ├── generate-image-chat-gpt/ # Tool tạo hình ảnh
 │   ├── generate-audio-aistudio/ # Tool tạo audio
 │   ├── post-tiktok/            # Tool đăng TikTok
-│   └── post-reels-facebook/    # Tool đăng Facebook Reels
+│   ├── post-reels-facebook/    # Tool đăng Facebook Reels
+│   └── post-reels-instagram/   # Tool đăng Instagram Reels
 ├── utils/                       # Utilities
 │   ├── browser.util.ts         # Browser utilities
 │   └── common.util.ts          # Common utilities
