@@ -4,7 +4,7 @@ Một bộ công cụ tự động hóa cho các tác vụ mạng xã hội đư
 
 ## 🚀 Tính năng
 
-Dự án bao gồm 5 công cụ chính:
+Dự án bao gồm 6 công cụ chính:
 
 ### 1. Generate Image ChatGPT
 
@@ -25,6 +25,10 @@ Tự động đăng video lên Facebook Reels với khả năng chọn profile v
 ### 5. Post Reels Instagram
 
 Tự động đăng video lên Instagram Reels với các tùy chọn chia sẻ và cài đặt nâng cao.
+
+### 6. Post Threads
+
+Tự động đăng thread lên Threads (Instagram) với khả năng đăng video và mô tả.
 
 ## 📋 Yêu cầu hệ thống
 
@@ -220,6 +224,34 @@ yarn command post-reels-instagram src/commands/post-reels-instagram/setting.json
 - `is_hide_like_and_view_counts`: Ẩn số lượt thích và xem (true/false)
 - `is_turn_off_commenting`: Tắt bình luận (true/false)
 
+### Post Threads
+
+Tự động đăng thread lên Threads (Instagram):
+
+```bash
+# Development
+yarn command:dev post-thread src/commands/post-threads/setting.json
+
+# Production
+yarn command post-thread src/commands/post-threads/setting.json
+```
+
+**Cấu hình setting.json:**
+
+```json
+{
+  "show_browser": true,
+  "is_close_browser": false,
+  "video_paths": ["public/video.mp4"],
+  "description": "Hello, world!"
+}
+```
+
+**Các tham số:**
+
+- `video_paths`: Mảng đường dẫn đến các file video cần đăng
+- `description`: Mô tả cho thread
+
 ## ⚙️ Cấu hình
 
 ### Các tham số chung:
@@ -236,9 +268,11 @@ yarn command post-reels-instagram src/commands/post-reels-instagram/setting.json
 
 3. **Đăng nhập Instagram**: Khi sử dụng tool Post Reels Instagram, bạn cần đăng nhập vào tài khoản Instagram. Đặt `show_browser: true` để có thể đăng nhập thủ công.
 
-4. **Đường dẫn file**: Đảm bảo đường dẫn file video trong setting là chính xác và file tồn tại.
+4. **Đăng nhập Threads**: Khi sử dụng tool Post Threads, bạn cần đăng nhập vào tài khoản Threads. Đặt `show_browser: true` để có thể đăng nhập thủ công.
 
-5. **Prompt ChatGPT**: Sử dụng tiếng Việt hoặc tiếng Anh cho prompt tạo hình ảnh.
+5. **Đường dẫn file**: Đảm bảo đường dẫn file video trong setting là chính xác và file tồn tại.
+
+6. **Prompt ChatGPT**: Sử dụng tiếng Việt hoặc tiếng Anh cho prompt tạo hình ảnh.
 
 ## 🧪 Scripts
 
@@ -270,7 +304,8 @@ src/
 │   ├── generate-audio-aistudio/ # Tool tạo audio
 │   ├── post-tiktok/            # Tool đăng TikTok
 │   ├── post-reels-facebook/    # Tool đăng Facebook Reels
-│   └── post-reels-instagram/   # Tool đăng Instagram Reels
+│   ├── post-reels-instagram/   # Tool đăng Instagram Reels
+│   └── post-threads/           # Tool đăng Threads
 ├── utils/                       # Utilities
 │   ├── browser.util.ts         # Browser utilities
 │   └── common.util.ts          # Common utilities

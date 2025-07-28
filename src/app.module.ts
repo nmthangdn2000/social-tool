@@ -5,6 +5,7 @@ import { GenerateAudioAistudioCommand } from './commands/generate-audio-aistudio
 import { PostTiktokCommand } from './commands/post-tiktok/post-tiktok.command';
 import { PostReelsFacebookCommand } from './commands/post-reels-facebook/post-reels-facebook.command';
 import { PostReelsInstagramCommand } from './commands/post-reels-instagram/post-reels-instagram.command';
+import { PostThreadCommand } from './commands/post-threads/post-thread.command';
 
 @Module({
   imports: [HttpModule],
@@ -14,6 +15,7 @@ import { PostReelsInstagramCommand } from './commands/post-reels-instagram/post-
     PostTiktokCommand,
     PostReelsFacebookCommand,
     PostReelsInstagramCommand,
+    PostThreadCommand,
   ],
 })
 export class AppModule {}

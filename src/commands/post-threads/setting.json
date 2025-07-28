@@ -1,0 +1,16 @@
+{
+  "show_browser": true,
+  "is_close_browser": false,
+  "media_files": ["public/video.mp4", "public/image.png"],
+  "description": "Hello, world!",
+  "reply_threads": [
+    {
+      "media_files": ["public/image.png"],
+      "description": "Hello, world!"
+    },
+    {
+      "media_files": ["public/image.png"],
+      "description": "Hello, world!"
+    }
+  ]
+}
