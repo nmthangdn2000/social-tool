@@ -176,8 +176,10 @@ export class PostReelsFacebookCommand extends CommandRunner {
       .nth(1);
     await nextButtonStep2.click();
 
-    await page.waitForSelector('div[role="form"]');
-    const editor = page.locator('div[role="form"] [contenteditable="true"]');
+    await page.waitForSelector('div[role="dialog"] form[method="POST"]');
+    const editor = page.locator(
+      'div[role="dialog"] form[method="POST"] [contenteditable="true"]',
+    );
     await editor.click();
     await page.keyboard.type(input.description, {
       delay: 100,
